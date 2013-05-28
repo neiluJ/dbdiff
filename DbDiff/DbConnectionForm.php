@@ -10,29 +10,26 @@ use Fwk\Form\Elements\Submit;
 
 class DbConnectionForm extends Form
 {
-    public function __construct($prefix = 'base', array $options = array()) 
-    {
-        parent::__construct(
-            "", 
-            Form::METHOD_POST, 
-            array_merge(array('prefix' => $prefix), $options)
-        );
+    public function __construct($action = null, $method = self::METHOD_POST, 
+        array $options = array()
+    ) {
+        parent::__construct($action, $method, $options);
         
-        $host = new Text($prefix .'.hostname');
+        $host = new Text('hostname');
         $host->label('Hostname')
              ->sanitizer(new StringSanitizer())
              ->filter(new NotEmptyFilter(), "Vous devez spécifier un hostname");
         
-        $user = new Text($prefix .'.username');
+        $user = new Text('username');
         $user->label('User')
              ->sanitizer(new StringSanitizer())
              ->filter(new NotEmptyFilter(), "Vous devez spécifier un user");
         
-        $pass = new Password($prefix .'.passwd');
+        $pass = new Password('passwd');
         $pass->label('Password')
              ->sanitizer(new StringSanitizer());
         
-        $dbname = new Text($prefix .'.database');
+        $dbname = new Text('database');
         $dbname->label('Database')
              ->sanitizer(new StringSanitizer())
              ->filter(new NotEmptyFilter(), "Vous devez spécifier une base");
