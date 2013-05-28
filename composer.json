@@ -1,0 +1,31 @@
+{
+    "name": "neiluj/dbdiff",
+    "description": "Spot diffs between databases",
+    "type": "library",
+    "keywords": [
+        "db",
+        "diff",
+        "utility",
+        "tool"
+    ],
+    "authors": [
+        {
+            "name": "Julien",
+            "email": "julien@nitronet.org"
+        }
+    ],
+    "license": "MIT",
+    "require": {
+        "php": ">=5.3",
+        "fwk/core": "dev-master",
+        "fwk/form": "dev-master",
+        "fwk/db": "dev-master",
+        "twig/twig": "dev-master"
+    },
+    "autoload": {
+        "psr-0": {
+            "DbDiff": ""
+        }
+    },
+    "minimum-stability": "dev"
+}

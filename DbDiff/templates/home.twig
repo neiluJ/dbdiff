@@ -1,0 +1,20 @@
+{% extends "layout.twig" %}
+
+{% block title %}Start comparision{% endblock%}
+
+{% block contents %}
+<h1>DbDiff</h1>
+
+<p>Choisissez une base de référence:</p>
+
+{% if form.isSubmitted() and form.getErrors()|length > 0 %}
+<div class="alert-box alert">
+    {% for error in form.getErrors() %}
+        {{ error }}<br />
+    {% endfor %}
+        <a href="" class="close">&times;</a>
+</div>
+{% endif %}
+
+{{ renderer.render(form)|raw }}
+{% endblock %}

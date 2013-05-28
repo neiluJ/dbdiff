@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fwk id="DbDiff" version="1.0">
+    <listener class="Fwk\Core\CoreListener" />
+    <!-- <listener class="Fwk\Core\Components\Console\ConsoleListener" /> -->
+    <!-- <listener class="Fwk\Core\Components\PropertiesListener" /> -->
+    <!-- <listener class="Fwk\Core\Components\Bootstrap\BootstrapListener" /> -->
+    <listener class="Fwk\Core\Components\UrlRewriter\UrlRewriterListener" />
+    <listener class="Fwk\Core\Components\ResultType\ResultTypeListener" />
+    <!-- <listener class="Fwk\Core\Components\ExtendsListener" /> -->
+    <listener class="Fwk\Core\Components\ViewHelper\ViewHelperListener" />
+
+   
+    <result-types>
+        <result-type
+            name="twig"
+            class="DbDiff\TwigResultType">
+            <param name="templatesDir">:packageDir/templates</param>
+            <param name="cache">0</param>
+            <param name="auto_reload">1</param>
+            <param name="strict_variables">true</param>
+        </result-type>
+    </result-types>
+
+    <view-helper>
+        <helper name="url" class="Fwk\Core\Components\UrlRewriter\UrlViewHelper" />
+    </view-helper>
+    
+    <actions>
+        <action name="Home" class="DbDiff\Actions\Home" method="show">
+            <result type="twig" name="success">
+                <param name="template">home.twig</param>
+            </result>
+        </action>
+    </actions>
+
+    <url-rewrite>
+        <url route="/$" action="Home" />
+    </url-rewrite>
+</fwk>
