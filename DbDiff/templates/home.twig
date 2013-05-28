@@ -45,7 +45,7 @@
 {% for idx, db in databases %}
 {% if db.schema_diff|default(null) != null %}
     {% set diff = db.schema_diff %}
-    <h4>Database #{{ idx+1 }}: {{ db.form.database }} -&gt; {{ db.form.username }}@{{ db.form.hostname }}</h4>
+    <h4>Database #{{ idx+1 }}: {{ db.form.database }} @ {{ db.form.hostname }}</h4>
     <section class="line grid2">
 	<aside class="mod">
             <dl>
