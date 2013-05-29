@@ -10,7 +10,6 @@ use Doctrine\DBAL\Schema\Comparator;
 
 class Home implements Preparable
 {
-    protected $renderer;
     protected $errors;
     protected $databases;
     protected $diff;
@@ -18,13 +17,15 @@ class Home implements Preparable
     
     public function prepare()
     {
-        $this->renderer = new \Fwk\Form\Renderer();
         $this->databases = array(
             0 => array(
-                'database' => null,
-                'hostname' => null,
-                'username' => null,
-                'passwd'   => null
+                'form' => array(
+                    'database' => null,
+                    'hostname' => null,
+                    'username' => null,
+                    'passwd'   => null,
+                    'driver'   => 'pdo_mysql'
+                )
             )
         );
     }
@@ -55,7 +56,7 @@ class Home implements Preparable
                 'dbname'    => $form->database,
                 'user'      => $form->username,
                 'password'  => $form->passwd,
-                'driver'    => 'pdo_mysql',
+                'driver'    => $form->driver,
                 'host'      => $form->hostname
             ));
             // support enums
@@ -121,11 +122,6 @@ class Home implements Preparable
            $this->databases[$idx]['sql_diff'] = $comp->toSaveSql($db['connection']->getDriver()->getDatabasePlatform());
            
        }
-    }
-    
-    public function getRenderer()
-    {
-        return $this->renderer;
     }
     
     public function getErrors()

@@ -3,7 +3,7 @@
 {% block title %}Start comparision{% endblock%}
 
 {% block contents %}
-<h1>DbDiff</h1>
+<h1><a href="{{ _helper.url('Home') }}">DbDiff</a></h1>
 
 <div class="pure-g">
     <div class="pure-u-1">
@@ -22,7 +22,11 @@
     <fieldset class="db-infos">
         <label for="db_{{ idx }}_host">#{{ idx }}</label>
         <select name="db[{{ idx }}][driver]" id="db_{{ idx }}_driver" class="db-driver">
-            <option value="mysql" selected="selected">MySQL</option>
+            <option value="pdo_mysql"{% if values.form.driver == "pdo_mysql" %} selected="selected"{% endif %}>MySQL</option>
+            <option value="pdo_sqlite"{% if values.form.driver == "pdo_sqlite" %} selected="selected"{% endif %}>SQLite</option>
+            <option value="pdo_pgsql"{% if values.form.driver == "pdo_pgsql" %} selected="selected"{% endif %}>PostgreSQL</option>
+            <option value="oci8"{% if values.form.driver == "oci8" %} selected="selected"{% endif %}>Oracle</option>
+            <option value="pdo_sqlsrv"{% if values.form.driver == "pdo_sqlsrv" %} selected="selected"{% endif %}>SQLServer</option>
         </select>
         
         <input type="text" name="db[{{ idx }}][hostname]" class="db-host" id="db_{{ idx }}_host" value="{{ values.form.hostname|default("") }}" placeholder="Hostname" />
