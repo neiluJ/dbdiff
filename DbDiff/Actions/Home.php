@@ -25,12 +25,6 @@ class Home implements Preparable
                 'hostname' => null,
                 'username' => null,
                 'passwd'   => null
-            ),
-            1 => array(
-                'database' => null,
-                'hostname' => null,
-                'username' => null,
-                'passwd'   => null
             )
         );
     }
@@ -44,6 +38,11 @@ class Home implements Preparable
         $this->submitted = true;
         
         if (!isset($_POST['db']) || !is_array($_POST['db'])) {
+            return Result::SUCCESS;
+        }
+        
+        if (count($_POST['db']) < 2) {
+            $this->errors = array('Vous devez renseigner au moins deux bases pour comparer (gnii)');
             return Result::SUCCESS;
         }
         

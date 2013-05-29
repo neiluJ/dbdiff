@@ -4,83 +4,131 @@
 
 {% block contents %}
 <h1>DbDiff</h1>
+
+<div class="pure-g">
+    <div class="pure-u-1">
+
 {% if errors|length > 0 %}
-<h3>Erreurs</h3>
 <div class="alert-box alert">
-    {% for idx, errs in errors %}
-        <h6>Database #{{ idx }}</h6>
-        {% for error in errs %}
-            - {{ error }}<br />
-        {% endfor %}
-    {% endfor %}
     <a href="" class="close">&times;</a>
+    {% for idx, errs in errors %}
+        <p><strong>Database #{{ idx }}</strong>: {{ errs|join(", ") }}.</p>
+    {% endfor %}
 </div>
 {% endif %}
-
-<form action="" method="post">
+<p class="form-infos"><i>La première connection est utilisée comme référence.</i></p>
+<form action="" method="post" class="pure-form">
     {% for idx, values in databases %}
-    <p>
+    <fieldset class="db-infos">
         <label for="db_{{ idx }}_host">#{{ idx }}</label>
-        <select name="db[{{ idx }}][driver]" id="db_{{ idx }}_driver">
+        <select name="db[{{ idx }}][driver]" id="db_{{ idx }}_driver" class="db-driver">
             <option value="mysql" selected="selected">MySQL</option>
         </select>
-        <input type="text" name="db[{{ idx }}][hostname]" id="db_{{ idx }}_host" value="{{ values.form.hostname|default("") }}" placeholder="Hostname" />
-        <input type="text" name="db[{{ idx }}][username]" placeholder="Username" id="db_{{ idx }}_user" value="{{ values.form.username|default("") }}" />
-        <input type="password" name="db[{{ idx }}][passwd]" placeholder="Password" id="db_{{ idx }}_passwd" value="{{ values.form.passwd|default("") }}" />
-        <input type="text" name="db[{{ idx }}][database]" id="db_{{ idx }}_database" placeholder="Database name" value="{{ values.form.database|default("") }}" />
-    </p>
+        
+        <input type="text" name="db[{{ idx }}][hostname]" class="db-host" id="db_{{ idx }}_host" value="{{ values.form.hostname|default("") }}" placeholder="Hostname" />
+        <input type="text" class="db-user" name="db[{{ idx }}][username]" placeholder="Username" id="db_{{ idx }}_user" value="{{ values.form.username|default("") }}" />
+        <input type="password" class="db-pass" name="db[{{ idx }}][passwd]" placeholder="Password" id="db_{{ idx }}_passwd" value="{{ values.form.passwd|default("") }}" />
+        <input type="text" class="db-db" name="db[{{ idx }}][database]" id="db_{{ idx }}_database" placeholder="Database name" value="{{ values.form.database|default("") }}" />
+        {% if loop.last == true %}
+        <a class="add-db" href="#">+</a>
+        {% elseif loop.first == false %}
+            <a class="add-db db-rm" href="#">&times;</a>
+        {% endif %}
+    </fieldset>
     {% endfor %}
-    
-    <p>
-        <br />
-        <input type="submit" value="Comparer" /> - <a href="#">ajouter une autre base de donnée</a>
-    </p>
+    <br />
+    <button type="submit" class="pure-button pure-button-primary">Comparer</button> 
 </form>
 
-{% if errors|length == 0 and submitted %}
-<hr />
+<script type="text/javascript">
+$(document).ready(function() {
+    var bindAddDb = function() {
+        $('a.add-db').bind('click', function(event) {
+            event.preventDefault();
+            if (!$(this).hasClass("db-rm")) {
+                cloneFieldset($(this).parent(), $(this));
+            } else {
+                removeFieldset($(this).parent());
+             }
+            $(this).html("×");
+        });
+    }, cloneFieldset = function(oldFieldset, addBtn) {
+        var newFieldset = oldFieldset.clone(),
+            reg = new RegExp('[0-9]+'),
+            idx = parseInt($('input[class="db-host"]', newFieldset).attr('name').match(reg));
+        
+        console.log(idx);
+        
+        idx++;
+        $('input[class="db-host"]', newFieldset).attr('name', 'db['+ idx +'][hostname]').attr('id', 'db_'+ idx +'_hostname');
+        $('select[class="db-driver"]', newFieldset).attr('name', 'db['+ idx +'][driver]').attr('id', 'db_'+ idx +'_driver');
+        $('input[class="db-user"]', newFieldset).attr('name', 'db['+ idx +'][username]').attr('id', 'db_'+ idx +'_username');
+        $('input[class="db-pass"]', newFieldset).attr('name', 'db['+ idx +'][passwd]').attr('id', 'db_'+ idx +'_passwd');
+        $('input[class="db-db"]', newFieldset).attr('name', 'db['+ idx +'][database]').attr('id', 'db_'+ idx +'_database');
+        $('label', newFieldset).attr('for', 'db_'+ idx +'_hostname').html("#"+ idx);
 
-<h3>Differences</h3>
-<p>La première connection est utilisée comme référence.</p>
+        newFieldset.insertAfter(oldFieldset);
+        
+        if (idx > 0) {
+            addBtn.html("×");
+            addBtn.addClass("db-rm");
+            bindAddDb();
+        } else {
+            $(this).remove();
+        }
+    }, removeFieldset = function(fieldset) {
+        var form = fieldset.parent();
+        fieldset.remove();
+    };
+ 
+    bindAddDb();
+    
+    $('.alert-box a.close').bind('click', function(event) {
+        event.preventDefault();
+        $(this).parent().remove();
+    });
+});
+</script>
+
+{% if errors|length == 0 and submitted %}
+
 {% for idx, db in databases %}
 {% if db.schema_diff|default(null) != null %}
     {% set diff = db.schema_diff %}
-    <h4>Database #{{ idx+1 }}: {{ db.form.database }} @ {{ db.form.hostname }}</h4>
-    <section class="line grid2">
-	<aside class="mod">
-            <dl>
-             <dt><strong>Nouvelles tables</strong></dt>
-              <dd>{% for table in diff.newTables %}- {{ table.name }}<br />{% endfor %}</dd>
-             <dt><strong>Tables manquantes</strong></dt>
-              <dd>{% for table in diff.removedTables %}- {{ table.name }}<br />{% endfor %}</dd>
-            <dt><strong>Tables différentes</strong></dt>
-              <dd>
-        {% for table in diff.changedTables %}
-          <a href="#" class="icon icon-down"> {{ table.name }}</a><br />
-          - {{ table.addedColumns|length }} nouvelles colonnes: {% for column in table.addedColumns %}{{ column.name }}, {% endfor %}<br />
-          - {{ table.changedColumns|length }} colonnes modifiées: {% for column in table.changedColumns %}{{ column.column.name }}, {% endfor %}<br />
-          - {{ table.removedColumns|length }} colonnes supprimées: {% for column in table.removedColumns %}{{ column.name }}, {% endfor %}<br />
-          - {{ table.addedIndexes|length }} nouveaux index: {% for column in table.addedIndexes %}{{ column.name }}, {% endfor %}<br />
-          - {{ table.changedIndexes|length }} index modifiées: {% for column in table.changedIndexes %}{{ column.name }}, {% endfor %}<br />
-          - {{ table.removedIndexes|length }} index supprimés: {% for column in table.removedIndexes %}{{ column.name }}, {% endfor %}<br />
-        {% endfor %}</dd>
-            </dl> 
-	</aside>
-	<aside class="mod">
-            <dl>
-             <dt><strong>Nouvelles séquences</strong></dt>
-              <dd>{% for table in diff.newSequences %}- {{ table.name }}<br />{% endfor %}</dd>
-             <dt><strong>Séquences manquantes</strong></dt>
-              <dd>{% for table in diff.removedSequences %}- {{ table.name }}<br />{% endfor %}</dd>
-            <dt><strong>Séquences différentes</strong></dt>
-              <dd>{% for table in diff.changedSequences %}- {{ table.name }}<br />{% endfor %}</dd>
-             <dt><strong>ForeingKeys orphelines</strong></dt>
-              <dd>{% for table in diff.orphanedForeignKeys %}- {{ table.name }}<br />{% endfor %}</dd>
-            </dl>
-        </aside>
-</section>
+    <h3>Differences {{ databases|first.form.database }}@{{ databases|first.form.hostname }} &lt;-&gt; {{ db.form.database }}@{{ db.form.hostname }}</h3>
+    <div class="box left">
+        <dl>
+         <dt><strong>Nouvelles tables</strong></dt>
+          <dd>{% for table in diff.newTables %}- {{ table.name }}<br />{% endfor %}</dd>
+         <dt><strong>Tables manquantes</strong></dt>
+          <dd>{% for table in diff.removedTables %}- {{ table.name }}<br />{% endfor %}</dd>
+        <dt><strong>Tables différentes</strong></dt>
+          <dd>
+    {% for table in diff.changedTables %}
+      <a href="#" class="icon icon-down"> {{ table.name }}</a><br />
+      - {{ table.addedColumns|length }} nouvelles colonnes: {% for column in table.addedColumns %}{{ column.name }}, {% endfor %}<br />
+      - {{ table.changedColumns|length }} colonnes modifiées: {% for column in table.changedColumns %}{{ column.column.name }}, {% endfor %}<br />
+      - {{ table.removedColumns|length }} colonnes supprimées: {% for column in table.removedColumns %}{{ column.name }}, {% endfor %}<br />
+      - {{ table.addedIndexes|length }} nouveaux index: {% for column in table.addedIndexes %}{{ column.name }}, {% endfor %}<br />
+      - {{ table.changedIndexes|length }} index modifiées: {% for column in table.changedIndexes %}{{ column.name }}, {% endfor %}<br />
+      - {{ table.removedIndexes|length }} index supprimés: {% for column in table.removedIndexes %}{{ column.name }}, {% endfor %}<br />
+    {% endfor %}</dd>
+        </dl> 
+    </div>
+    <div class="box right">
+        <dl>
+         <dt><strong>Nouvelles séquences</strong></dt>
+          <dd>{% for table in diff.newSequences %}- {{ table.name }}<br />{% endfor %}</dd>
+         <dt><strong>Séquences manquantes</strong></dt>
+          <dd>{% for table in diff.removedSequences %}- {{ table.name }}<br />{% endfor %}</dd>
+        <dt><strong>Séquences différentes</strong></dt>
+          <dd>{% for table in diff.changedSequences %}- {{ table.name }}<br />{% endfor %}</dd>
+         <dt><strong>ForeingKeys orphelines</strong></dt>
+          <dd>{% for table in diff.orphanedForeignKeys %}- {{ table.name }}<br />{% endfor %}</dd>
+        </dl>
+    </div>
     
-<h6>SQL</h6>
+<h6 style="clear:both">SQL</h6>
 <pre style="max-height: 200px; overflow-y: scroll"><code lang="sql">
 {% for line in db.sql_diff %}
 {{ line }};
@@ -91,6 +139,7 @@
 {% endfor %}
 
 {% endif %}
-<hr />
-<footer>dbdiff</footer>
+<footer><a href="https://github.com/neiluJ/dbdiff" class="right">sources sur github</a> dbdiff</footer>
+</div>
+</div>
 {% endblock %}
