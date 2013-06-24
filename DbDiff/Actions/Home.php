@@ -95,6 +95,7 @@ class Home implements Preparable
     {
        $base    = array();
        $others  = array();
+       $base = null;
        foreach ($this->databases as $idx => $db) {
            $connection = $db['connection'];
            if (!$connection instanceof Connection) {
@@ -111,16 +112,15 @@ class Home implements Preparable
            
            $this->databases[$idx]['tables'] = $tables;
            $this->databases[$idx]['schema'] = $sch->createSchema();
-       }
-       
-       $dbs = $this->databases;
-       $base = array_shift($dbs);
-       
-       foreach ($dbs as $idx => $db) {
-           $comp = Comparator::compareSchemas($base['schema'], $db['schema']);
+
+            if ($base === null) {
+                $base = $this->databases[$idx]['schema'];
+                continue;
+            }
+
+           $comp = Comparator::compareSchemas($base, $this->databases[$idx]['schema']);
            $this->databases[$idx]['schema_diff'] = $comp;
-           $this->databases[$idx]['sql_diff'] = $comp->toSaveSql($db['connection']->getDriver()->getDatabasePlatform());
-           
+           $this->databases[$idx]['sql_diff'] = $comp->toSaveSql($connection->getDriver()->getDatabasePlatform());
        }
     }
     
