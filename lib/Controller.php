@@ -1,14 +1,18 @@
 <?php
-namespace DbDiff\Actions;
+/**
+ * This file is part of DbDiff, a simple database-diff tool.
+ *
+ * MIT License
+ * Copyright (c) 2012-2016 Julien Ballestracci
+ */
+namespace DbDiff;
 
-use Fwk\Core\Preparable;
-use Fwk\Core\Action\Result;
-use Fwk\Db\Connection;
-use DbDiff\DbConnectionForm;
-use DbDiff\ValidConnectionFilter;
 use Doctrine\DBAL\Schema\Comparator;
+use Fwk\Core\Action\Controller as BaseController;
+use Fwk\Core\Preparable;
+use Fwk\Db\Connection;
 
-class Home implements Preparable
+class Controller extends BaseController implements Preparable
 {
     protected $errors;
     protected $databases;
@@ -33,18 +37,18 @@ class Home implements Preparable
     public function show()
     {
         if ($_SERVER['REQUEST_METHOD'] !== "POST") {
-           return Result::SUCCESS;
+            return $this->render();
         }
         
         $this->submitted = true;
         
         if (!isset($_POST['db']) || !is_array($_POST['db'])) {
-            return Result::SUCCESS;
+            return $this->render();
         }
         
         if (count($_POST['db']) < 2) {
             $this->errors = array('Vous devez renseigner au moins deux bases pour comparer (gnii)');
-            return Result::SUCCESS;
+            return $this->render();
         }
         
         $databases = array();
@@ -81,20 +85,18 @@ class Home implements Preparable
         $this->databases    = $databases;
         
         if (count($errors)) {
-            return Result::SUCCESS;
+            return $this->render();
         }
         
         
         $this->computeDiff();
         
-        return Result::SUCCESS;
+        return $this->render();
     }
     
     
     protected function computeDiff()
     {
-       $base    = array();
-       $others  = array();
        $base = null;
        foreach ($this->databases as $idx => $db) {
            $connection = $db['connection'];
@@ -123,7 +125,17 @@ class Home implements Preparable
            $this->databases[$idx]['sql_diff'] = $comp->toSaveSql($connection->getDriver()->getDatabasePlatform());
        }
     }
-    
+
+    protected function render()
+    {
+        return $this->getServices()->get('twig')->render('home.twig', array(
+            'errors'     => $this->errors,
+            'databases'  => $this->databases,
+            'diff'       => $this->diff,
+            'submitted'  => $this->submitted
+        ));
+    }
+
     public function getErrors()
     {
         return $this->errors;

@@ -20,11 +20,11 @@
         "fwk/core": "dev-master",
         "fwk/form": "dev-master",
         "fwk/db": "dev-master",
-        "twig/twig": "dev-master"
+        "nitronet/fwk-twig": "dev-master"
     },
     "autoload": {
         "psr-0": {
-            "DbDiff": ""
+            "DbDiff": "./lib/"
         }
     },
     "minimum-stability": "dev"

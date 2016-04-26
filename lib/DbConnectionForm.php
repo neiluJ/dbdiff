@@ -1,4 +1,10 @@
 <?php
+/**
+ * This file is part of DbDiff, a simple database-diff tool.
+ *
+ * MIT License
+ * Copyright (c) 2012-2016 Julien Ballestracci
+ */
 namespace DbDiff;
 
 use Fwk\Form\Form;
